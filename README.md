@@ -4,14 +4,14 @@
 Developed with libgdx java game development framework. 
 https://libgdx.com/dev/project-generation/
 
-TODO:
+TODO (As of 28 March):
 
--Add start screen with "play" and "info" tabs. 
+-Improve Start Screen 
 
--Add background for in-game interface.
+-Improve Art.
 
--Add scoreboard.
+-Game Over Screen.
 
--End game with collision of photon and bottom of screen.
+
 
 
