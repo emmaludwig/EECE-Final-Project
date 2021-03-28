@@ -1,0 +1,160 @@
+package com.mygdx.game;
+
+import java.util.Iterator;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.TimeUtils;
+
+public class GameScreen implements Screen {
+
+	final SolarPanelFallMain game;
+
+	Texture photonImage;
+	Texture solarPanelImage;
+	OrthographicCamera camera;
+	Rectangle solarPanel;
+	Array<Rectangle> photons;
+	long lastDropTime;
+	int photonsGathered;
+
+	public GameScreen(final SolarPanelFallMain gam) {
+		this.game = gam;
+
+		//Import Images to be used in the game.
+		photonImage = new Texture(Gdx.files.internal("PhotonScaled.png"));
+		solarPanelImage = new Texture(Gdx.files.internal("SolarPanelScaled.png"));
+		//TODO: Add sounds, sun in background. Start playback of music.
+
+		//Create "view" of game with 800*400 pixel resolution (objects are 64*64)
+		camera = new OrthographicCamera();
+		camera.setToOrtho(false, 800, 480);
+
+		//Create solar panel as a rectangle.
+		solarPanel = new Rectangle();
+		solarPanel.x = 800 / 2 - 64 / 2; 
+		solarPanel.y = 20; 
+		solarPanel.width = 64;
+		solarPanel.height = 64;
+
+		//Create photons falling.
+		photons = new Array<Rectangle>();
+		spawnPhoton();
+		
+		//TODO: Scoreboard, starting screen.
+
+	}
+
+	private void spawnPhoton() {
+		Rectangle photon = new Rectangle();
+		//Puts photon at random area on top of screen.
+		photon.x = MathUtils.random(0, 800 - 64);
+		photon.y = 480;
+		photon.width = 64;
+		photon.height = 64;
+		photons.add(photon);
+		lastDropTime = TimeUtils.nanoTime();
+	}
+
+	@Override
+	public void render(float delta) {
+		//Color of background.
+		ScreenUtils.clear(0, 0, 0, 1);
+
+		// tell the camera to update its matrices.
+		camera.update();
+
+		// tell the SpriteBatch to render in the
+		// coordinate system specified by the camera.
+		game.batch.setProjectionMatrix(camera.combined);
+
+		// begin a new batch and draw the bucket and
+		// all drops
+		game.batch.begin();
+		game.font.draw(game.batch, "Photons Collected: " + photonsGathered, 0, 480);
+		game.batch.draw(solarPanelImage, solarPanel.x, solarPanel.y);
+		for (Rectangle photon : photons) {
+			game.batch.draw(photonImage, photon.x, photon.y);
+		}
+		game.batch.end();
+
+		// Trackpad input instructions.
+		if (Gdx.input.isTouched()) {
+			Vector3 touchPos = new Vector3();
+			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			solarPanel.x = touchPos.x - 64 / 2;
+		}
+		
+		
+		//Arrow key input instructions. 
+		//TODO: Make it move faster.
+		if (Gdx.input.isKeyPressed(Keys.LEFT))
+			solarPanel.x -= 200 * Gdx.graphics.getDeltaTime();
+		if (Gdx.input.isKeyPressed(Keys.RIGHT))
+			solarPanel.x += 200 * Gdx.graphics.getDeltaTime();
+
+		//Make sure the solar panel stays on screen.
+		if (solarPanel.x < 0)
+			solarPanel.x = 0;
+		if (solarPanel.x > 800 - 64)
+			solarPanel.x = 800 - 64;
+
+		//Code to keep spawning photons.
+		if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
+			spawnPhoton();
+
+	
+		 //This block removes photons when they hit the solar panel
+	      //TODO End game when photon gets past panel.
+	     for (Iterator<Rectangle> iter = photons.iterator(); iter.hasNext();) {
+				Rectangle photon = iter.next();
+				photon.y -= 200 * Gdx.graphics.getDeltaTime();
+				if (photon.y + 64 < 0)
+					iter.remove();
+				if (photon.overlaps(solarPanel)) {
+					iter.remove();
+					photonsGathered++;
+				}
+			}
+		}
+	
+
+	@Override
+	public void resize(int width, int height) {
+	}
+
+	@Override
+	public void show() {
+		
+	}
+
+	@Override
+	public void hide() {
+	}
+
+	@Override
+	public void pause() {
+	}
+
+	@Override
+	public void resume() {
+	}
+
+	@Override
+	public void dispose() {
+		photonImage.dispose();
+		solarPanelImage.dispose();
+	}
+
+}
