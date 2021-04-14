@@ -27,6 +27,8 @@ public class MainMenuScreen implements Screen {
 		game.batch.begin();
 		game.font.draw(game.batch, "EECE Final Project - Emma and Tim ", 100, 150);
 		game.font.draw(game.batch, "Click to start!", 100, 100);
+		game.font.draw(game.batch, "Rules: 1. Catch the photons as they fall.", 100, 70);
+		game.font.draw(game.batch, "2. If you miss one, the game is over!", 100, 50);
 		game.batch.end();
 
 		if (Gdx.input.isTouched()) {
